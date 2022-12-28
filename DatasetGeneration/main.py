@@ -1,6 +1,7 @@
 import csv
 import random
 import json
+import argparse
 
 
 def generateMusicTable():
@@ -29,11 +30,22 @@ def generateTable(domain):
         generatePeopleTable()
 
 def main():
-    generateTable('music')
+    parser = argparse.ArgumentParser(description="Script for table and query generation")
+    parser.add_argument("--domain", type=str, default='music',help="Domain for the dataset (Available domains: movies, music, people)")
+    parser.add_argument("--table", type=bool, default=False, help="Flag for generating tables")
+    parser.add_argument("--utility", type=bool, default=False, help="Flag for generating utility matrix")
+    args = parser.parse_args()
+
+    domain = args.domain
+    table = args.table
+    utility = args.utility
+
+    print(domain,table,utility)
+
+    #generateTable('music')
 
 
 
 if __name__ == '__main__':
     main()
-    print('Prova')
 

@@ -3,9 +3,10 @@ import random
 import json
 import os
 import argparse
+import pandas as pd
 
 ASSET_DIR='assets'
-OUTPUT_DIR='outputs'
+TABLE_OUTPUT_DIR= 'tables'
 MOVIE_ITEMS_LEN=3000
 
 
@@ -54,7 +55,7 @@ def generateMoviesTable():
         movies.append(item)
 
     # open the file in the write mode
-    with open(os.path.join(OUTPUT_DIR,'movies.csv'), 'w') as f:
+    with open(os.path.join(TABLE_OUTPUT_DIR,'movies.csv'), 'w') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -66,6 +67,34 @@ def generateMoviesTable():
 
 def generatePeopleTable():
     header = ['id', 'name', 'age', 'job', 'nationality']
+
+def generateQueries(table,numquery):
+    '''
+    Takes as input a csv table path and generates random queries iterating through the table items
+
+    :param table: 'movies.csv' or 'people.csv' or 'music.csv'
+    :param numquery: Number of queries to generate
+    :return:
+    '''
+    '''tablename=table.split('.')[0] #get table name from table.csv
+
+    with open(os.path.join(TABLE_OUTPUT_DIR,table)) as f:
+        df = pd.read_csv(f)
+
+    queries= {}
+    while len(queries!=numquery):
+        randomQuery=[]
+        randomRow=df.iloc[random.randint(0,len(df))]
+        i=random.randint(1,4)
+        q_id='Q'+str(len(queries))
+        if(i == 1):
+            random=
+        elif (i==2):
+        elif (i == 3):
+
+        elif (i == 4):
+
+        queries.add()'''
 
 
 def generateTable(domain):
@@ -95,6 +124,7 @@ def main():
     #print(domain,table,utility)
 
     generateTable(domain)
+    #generateQueries('movies.csv',500)
 
 
 

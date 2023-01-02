@@ -8,8 +8,8 @@ ASSET_DIR = "assets"
 
 def generate_user_list(num: int) -> str:
     for _ in range(num):
-        tmp = uuid.uuid4().time_low
-        yield "user"+str(tmp)
+        tmp_id = uuid.uuid4().time_low
+        yield "user"+str(tmp_id)
 
 
 if __name__ == "__main__":

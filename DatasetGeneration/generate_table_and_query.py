@@ -16,7 +16,7 @@ PEOPLE_ITEMS_LEN=50000
 
 
 def generateMusicTable():
-    header=['id','name','artist','genre','duration'] #Add nationality to songs?
+    header=['id','name','artist','genre','year'] #Add nationality to songs?
 
     # Load nouns for song name
     with open(os.path.join(ASSET_DIR, 'nouns.json')) as f:
@@ -39,13 +39,15 @@ def generateMusicTable():
             first_names.append(i['first_name'])
     print('Names:', len(first_names))
 
+    year=['60s','70s','80s','90s','2000s','2010s','2020s']
+
     id = 0
     songs = []
     for i in range(0, MUSIC_ITEMS_LEN):
         item_id = id
         item_name = random.choice(nouns)
         item_genre = random.choice(genres)
-        item_duration = random.randint(90, 240)
+        item_duration = random.choice(year)
         item_artist = random.choice(first_names)
         # print(item_id,'\n',item_name,'\n',item_genre,'\n',item_duration,'\n',item_nationality,'\n','='*35)
         id += 1

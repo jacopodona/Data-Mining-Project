@@ -4,11 +4,13 @@ import json
 import os
 import argparse
 import pandas as pd
+import generate_user_list
+import generate_utility_matrix
 
 ASSET_DIR='assets'
 TABLE_OUTPUT_DIR= 'tables'
 QUERY_OUTPUT_DIR= 'queries'
-MUSIC_ITEMS_LEN=50000
+MUSIC_ITEMS_LEN=25000
 MOVIE_ITEMS_LEN=3000
 PEOPLE_ITEMS_LEN=50000
 
@@ -267,16 +269,10 @@ def generateTable(domain):
 
 def main():
     parser = argparse.ArgumentParser(description="Script for table and query generation")
-    parser.add_argument("--domain", type=str, default='',help="Domain for the dataset (Available domains: movies, music, people)")
-    parser.add_argument("--table", type=bool, default=False, help="Flag for generating tables")
-    parser.add_argument("--utility", type=bool, default=False, help="Flag for generating utility matrix")
+    parser.add_argument("--domain", type=str, default='people',help="Domain for the dataset (Available domains: movies, music, people)")
     args = parser.parse_args()
 
     domain = args.domain
-    table = args.table
-    utility = args.utility
-
-    #print(domain,table,utility)
 
     generateTable(domain)
     tableFile=domain+'.csv'

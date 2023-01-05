@@ -1,7 +1,7 @@
 import csv
 import os
 from typing import List
-
+from random import uniform
 import numpy as np
 import argparse
 
@@ -11,14 +11,15 @@ UTILITY_MATRICES_DIR = "utility_matrices"
 TABLE_DIR = "tables"
 QUERY_DIR = "queries"
 USER_DIR = "users"
-THRESHOLD = 0.33
+# THRESHOLD = 0.33
 
 
 def get_utility_matrix(users: List, queries: int, output_file_path: str):
     for user in users:
         row = [user]
+        threshold = uniform(0.33, 0.5)
         for _ in range(queries):
-            if np.random.uniform() >= THRESHOLD:
+            if np.random.uniform() >= threshold:
                 row.append(str(np.random.randint(0, 101)))
             else:
                 row.append("")
@@ -60,12 +61,18 @@ if __name__ == "__main__":
     parser.add_argument("--users", type=str, default='user_list',
                         help="User list file")
     parser.add_argument("--queries", type=str, default="queries.csv", help="Queries list file")
+    parser.add_argument("--domain", type=str, default="null",
+                        help="Domain for the dataset (Available domains: movies, music, people)")
     args = parser.parse_args()
 
     queries_file = args.queries
     user_file = args.users
-
+    domain = args.domain
     output_path = queries_file[:-4]+"_utility_matrix"+queries_file[-4:]
+    if not domain == "null":
+        queries_file = f"{domain}.csv"
+        user_file = f"{domain}_user_list"
+        output_path = f"{domain}_utility_matrix.csv"
     queries_num = read_queries(queries_file, output_path)
     users_list = read_users(user_file)
 

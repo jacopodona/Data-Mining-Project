@@ -188,7 +188,7 @@ def generateQueries(table, numquery):
     '''
     tablename = table.split('.')[0]  # get table name from table.csv
 
-    if tablename == 'movies':  # TODO METTI MIN E MAX NEI RANDOM DI H
+    if tablename == 'movies':
         header = ['id', 'name', 'genre', 'duration', 'nationality']
         min = 1
         max = 4

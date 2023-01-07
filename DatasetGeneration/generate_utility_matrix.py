@@ -1,9 +1,12 @@
 import csv
 import os
+import random
 from typing import List
-from random import uniform
+from random import uniform,shuffle
 import numpy as np
+from tqdm import tqdm
 import argparse
+import pandas as pd
 
 
 ASSETS_DIR = "assets"
@@ -12,6 +15,85 @@ TABLE_DIR = "tables"
 QUERY_DIR = "queries"
 USER_DIR = "users"
 # THRESHOLD = 0.33
+
+def get_query_similarity(query1,query2):
+    score=0
+    attributes1 = []
+    value1 = []
+    attributes2 = []
+    value2 = []
+    for i in range(1,len(query1)):
+        condition = query1[i]
+        attributes1.append(condition.split('=')[0].strip())
+        value1.append(condition.split('=')[1])
+    for i in range(1,len(query2)):
+        condition = query2[i]
+        attributes2.append(condition.split('=')[0].strip())
+        value2.append(condition.split('=')[1])
+    for i in range(len(attributes1)):
+        field=attributes1[i]
+        if field in attributes2:
+            score+=1
+            position=attributes2.index(attributes1[i])
+            if (value1[i]==value2[position]):
+                score+=5
+    return score
+
+
+def get_realistic_utility_matrix(users_list,queries,output_path):
+    #First give random rating to list of a small set of queries
+    for i in tqdm(range(len(users_list))):
+        user=users_list[i]
+        num_rated_queries = abs(int(np.random.normal(loc=0.1, scale=0.02, size=1) * len(queries)))
+        random_order_queries=queries
+        shuffle(random_order_queries)
+        rated_queries=random_order_queries[:num_rated_queries]
+        rates=[]
+        for j in range(0,len(rated_queries)):
+            rates.append(np.random.randint(0, 101))
+        #Queries to rate using previous queries
+        query_rate_results= abs(int(np.random.normal(loc=0.1, scale=0.02, size=1) * len(queries)))
+        for j in range(0,query_rate_results):
+            #Select a non rated query
+            query_to_rate=random.choice(queries)
+            while query_to_rate in rated_queries:
+                query_to_rate = random.choice(queries)
+            #Compute vote based on similarity with rated queries
+            max_similarity = 0
+            similar_query_index = -1
+            for k in range(0,len(rated_queries)):
+                pairwise_similiarity=get_query_similarity(query_to_rate,rated_queries[k])
+                if(pairwise_similiarity>max_similarity):
+                    max_similarity=pairwise_similiarity
+                    similar_query_index=k
+            if max_similarity==0: #No rated query is similar to selected query
+                vote=np.random.randint(0, 101)
+            else:
+                standard_deviation=1/max_similarity #The higher the score, the higher the similarity, the smaller the standard deviation from which the rating is drawn
+                vote=rates[similar_query_index]+int(np.random.normal(loc=0, scale=standard_deviation, size=1)) #New vote is the one of the most similar query + noise
+            if vote<0:
+                vote=0
+            if vote>100:
+                vote=100
+            rated_queries.append(query_to_rate)
+            rates.append(vote)
+        writeUserRow(user,queries,rated_queries,rates,output_path)
+
+def writeUserRow(user,total_queries,user_rated_queries, rates,output_path):
+    row=[user]
+    for i in range(0,len(total_queries)):
+        q=total_queries[i]
+        hasBeenRated=False
+        for j in range(0,len(user_rated_queries)):
+            r=user_rated_queries[j]
+            if q[0]==r[0]: #If they have same id, if the user has rated the query
+                row.append(str(rates[j]))
+                hasBeenRated = True
+        if(hasBeenRated==False):
+            row.append("")
+    with open(os.path.join(UTILITY_MATRICES_DIR, output_path), 'a') as fp:
+        fp.write(",".join(row))
+        fp.write("\n")
 
 
 def get_utility_matrix(users: List, queries: int, output_file_path: str):
@@ -43,9 +125,9 @@ def read_queries(file_path: str, output_file_path: str) -> int:
         fp.write(",".join(queries_ids))
         fp.write("\n")
 
-    del queries, queries_ids
+    #del queries, queries_ids
 
-    return query_ids_len
+    return queries
 
 
 def read_users(file_path: str) -> List:
@@ -68,12 +150,16 @@ if __name__ == "__main__":
     queries_file = args.queries
     user_file = args.users
     domain = args.domain
+    table_path=os.path.join('tables',domain+'.csv')
+    table_dataframe = pd.read_csv(table_path)
     output_path = queries_file[:-4]+"_utility_matrix"+queries_file[-4:]
     if not domain == "null":
         queries_file = f"{domain}.csv"
         user_file = f"{domain}_user_list"
         output_path = f"{domain}_utility_matrix.csv"
-    queries_num = read_queries(queries_file, output_path)
+    #queries_num = read_queries(queries_file, output_path)
     users_list = read_users(user_file)
-
-    get_utility_matrix(users_list, queries_num, output_path)
+    queries = read_queries(queries_file, output_path)
+    print('Generating utility matrix for users')
+    #get_utility_matrix(users_list, queries_num, output_path)
+    get_realistic_utility_matrix(users_list,queries,output_path)

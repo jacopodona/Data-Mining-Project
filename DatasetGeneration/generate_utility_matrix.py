@@ -17,6 +17,12 @@ USER_DIR = "users"
 # THRESHOLD = 0.33
 
 def get_query_similarity(query1,query2):
+    '''
+    Computes similarity score between two queries given the conditions: same attribute in query ->+1 point, same attribute-value-->+5 point
+    :param query1:
+    :param query2:
+    :return:
+    '''
     score=0
     attributes1 = []
     value1 = []
@@ -41,6 +47,13 @@ def get_query_similarity(query1,query2):
 
 
 def get_realistic_utility_matrix(users_list,queries,output_path):
+    '''
+    Creates a semi-realistic utility matrix by giving similar score to similar queries sampling from normal distribution
+    :param users_list:
+    :param queries:
+    :param output_path:
+    :return:
+    '''
     #First give random rating to list of a small set of queries
     for i in tqdm(range(len(users_list))):
         user=users_list[i]
@@ -71,7 +84,7 @@ def get_realistic_utility_matrix(users_list,queries,output_path):
             else:
                 standard_deviation=1/max_similarity #The higher the score, the higher the similarity, the smaller the standard deviation from which the rating is drawn
                 vote=rates[similar_query_index]+int(np.random.normal(loc=0, scale=standard_deviation, size=1)) #New vote is the one of the most similar query + noise
-            if vote<0:
+            if vote<0:#Clip value between 0 and 100 range
                 vote=0
             if vote>100:
                 vote=100
@@ -86,10 +99,10 @@ def writeUserRow(user,total_queries,user_rated_queries, rates,output_path):
         hasBeenRated=False
         for j in range(0,len(user_rated_queries)):
             r=user_rated_queries[j]
-            if q[0]==r[0]: #If they have same id, if the user has rated the query
+            if q[0]==r[0]: #If they have same id, the user has rated the query, append the vote
                 row.append(str(rates[j]))
                 hasBeenRated = True
-        if(hasBeenRated==False):
+        if(hasBeenRated==False): #If they id has not been found the query has not been rated by the user, append empty rating
             row.append("")
     with open(os.path.join(UTILITY_MATRICES_DIR, output_path), 'a') as fp:
         fp.write(",".join(row))

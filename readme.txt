@@ -28,6 +28,9 @@ Before running, it's necessary to have 4 folders in the same directory of the sc
 For generating the items, we used various json files containing names, movie/song genres, nationalities etc...
 We placed them inside the assets folder and are necessary to generate the tables.
 
+Required libraries:
+tqdm --> displays progress bar while the program is generating the dataset
+
 For further questions:
 jacopo.dona@studenti.unitn.it
 jacopo.clocchiatti@studenti.unitn.it

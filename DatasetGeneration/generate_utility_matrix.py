@@ -44,7 +44,7 @@ def get_realistic_utility_matrix(users_list,queries,output_path):
     #First give random rating to list of a small set of queries
     for i in tqdm(range(len(users_list))):
         user=users_list[i]
-        num_rated_queries = abs(int(np.random.normal(loc=0.1, scale=0.02, size=1) * len(queries)))
+        num_rated_queries = abs(int(np.random.normal(loc=0.05, scale=0.02, size=1) * len(queries)))
         random_order_queries=queries
         shuffle(random_order_queries)
         rated_queries=random_order_queries[:num_rated_queries]
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument("--users", type=str, default='user_list',
                         help="User list file")
     parser.add_argument("--queries", type=str, default="queries.csv", help="Queries list file")
-    parser.add_argument("--domain", type=str, default="null",
+    parser.add_argument("--domain", type=str, default="people",
                         help="Domain for the dataset (Available domains: movies, music, people)")
     args = parser.parse_args()
 

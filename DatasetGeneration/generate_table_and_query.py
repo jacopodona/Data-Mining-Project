@@ -55,7 +55,7 @@ def generateMusicTable():
         songs.append(item)
 
     # open the file in the write mode
-    with open(os.path.join(TABLE_OUTPUT_DIR, 'music.csv'), 'w') as f:
+    with open(os.path.join(TABLE_OUTPUT_DIR, 'music.csv'), 'w',newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -106,7 +106,7 @@ def generateMoviesTable():
         movies.append(item)
 
     # open the file in the write mode
-    with open(os.path.join(TABLE_OUTPUT_DIR, 'movies.csv'), 'w') as f:
+    with open(os.path.join(TABLE_OUTPUT_DIR, 'movies.csv'), 'w',newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -168,7 +168,7 @@ def generatePeopleTable():
         people.append(item)
 
     # open the file in the write mode
-    with open(os.path.join(TABLE_OUTPUT_DIR, 'people.csv'), 'w') as f:
+    with open(os.path.join(TABLE_OUTPUT_DIR, 'people.csv'), 'w',newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -250,7 +250,7 @@ def generateQueries(table, numquery):
         queries.add(str(query))
 
     # open the file in the write mode
-    with open(os.path.join(QUERY_OUTPUT_DIR, tablename + '.csv'), 'w') as f:
+    with open(os.path.join(QUERY_OUTPUT_DIR, tablename + '.csv'), 'w',newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 

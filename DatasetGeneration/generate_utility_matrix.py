@@ -57,7 +57,7 @@ def get_realistic_utility_matrix(users_list,queries,output_path):
     #First give random rating to list of a small set of queries
     for i in tqdm(range(len(users_list))):
         user=users_list[i]
-        num_rated_queries = abs(int(np.random.normal(loc=0.05, scale=0.02, size=1) * len(queries)))
+        num_rated_queries = abs(int(np.random.normal(loc=0.03, scale=0.02, size=1) * len(queries)))
         random_order_queries=queries
         shuffle(random_order_queries)
         rated_queries=random_order_queries[:num_rated_queries]
@@ -65,7 +65,7 @@ def get_realistic_utility_matrix(users_list,queries,output_path):
         for j in range(0,len(rated_queries)):
             rates.append(np.random.randint(0, 101))
         #Queries to rate using previous queries
-        query_rate_results= abs(int(np.random.normal(loc=0.1, scale=0.02, size=1) * len(queries)))
+        query_rate_results= abs(int(np.random.normal(loc=0.05, scale=0.02, size=1) * len(queries)))
         for j in range(0,query_rate_results):
             #Select a non rated query
             query_to_rate=random.choice(queries)

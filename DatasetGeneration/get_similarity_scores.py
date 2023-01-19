@@ -1,7 +1,6 @@
 import argparse
 import csv
 import os
-from pprint import pprint
 from typing import List, Dict
 
 import polars as pl
@@ -32,11 +31,34 @@ def get_similarity_score(query1: LazyFrame, query2: LazyFrame) -> float:
     return intersect/union
 
 
-def get_similarity_scores(queries: List[Dict]) -> ():
+def build_matrix(raw_matrix: List[Dict]) -> Dict:
+    """
+    Build a matrix with a dict for direct access to the scores
+    :param raw_matrix: list of comparisons scores
+    :return: similarity matrix as a dict
+    """
+    clean_matrix = dict()
+    for row in raw_matrix:
+        id_1, id_2, score = row.values()
+        print(id_1, id_2, score)
+        if id_1 in clean_matrix.keys():
+            clean_matrix[id_1][id_2] = score
+        else:
+            clean_matrix[id_1] = {id_2: score}
+
+        if id_2 in clean_matrix.keys():
+            clean_matrix[id_2][id_1] = score
+        else:
+            clean_matrix[id_2] = {id_1: score}
+
+    return clean_matrix
+
+
+def get_similarity_scores(queries: List[Dict]) -> Dict:
     """
     Get the similarity matrix of all the queries
     :param queries: list of all queries
-    :return:
+    :return: similarity matrix
     """
     score_matrix = []
     for i, query1 in enumerate(tqdm(queries)):
@@ -46,19 +68,17 @@ def get_similarity_scores(queries: List[Dict]) -> ():
                 score_matrix.append({"id_1": query1["id"],
                                      "id_2": query2["id"],
                                      "score": score})
-
-    test_results = [res for res in score_matrix if (res["score"] > 0.0)]
-    pprint(test_results)
+    return build_matrix(score_matrix)
 
 
-def parse_queries(queries: List[str]) -> List[Dict]:
+def parse_queries(raw_queries: List[str]) -> List[Dict]:
     """
     Parse the query and split the condition field accordingly
-    :param queries: list of raw query data
+    :param raw_queries: list of raw query data
     :return: list of the parsed query
     """
     query_parsed = []
-    for query in queries:
+    for query in raw_queries:
         tmp = dict()
         tmp["id"] = query.split(",")[0]
         tmp["conditions"] = dict()
@@ -112,12 +132,12 @@ def build_queries_on_table(df: DataFrame, queries: List[Dict]) -> List[Dict]:
     return queries_with_expressions
 
 
-def get_similarity_matrix(table_file: str, queries_file: str) -> ():
+def get_similarity_matrix(table_file: str, queries_file: str) -> Dict:
     """
     Build the similarity matrix
     :param table_file: file containing the table with information
     :param queries_file: file containing the list of queries
-    :return:
+    :return: whole similarity matrix
     """
     df = pl.read_csv(os.path.join(TABLE_DIR, table_file), has_header=True, sep=",", encoding="utf-8")
 
@@ -125,14 +145,16 @@ def get_similarity_matrix(table_file: str, queries_file: str) -> ():
 
     queries = build_queries_on_table(df, queries)
 
-    get_similarity_scores(queries)
+    matrix = get_similarity_scores(queries)
+
+    return matrix
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script for similarity matrix generation")
-    parser.add_argument("--table", type=str, default='people.csv',
+    parser.add_argument("--table", type=str, default='movies.csv',
                         help="Table file")
-    parser.add_argument("--queries", type=str, default="people.csv", help="Queries list file")
+    parser.add_argument("--queries", type=str, default="movies.csv", help="Queries list file")
     args = parser.parse_args()
 
     queries_filename = args.queries

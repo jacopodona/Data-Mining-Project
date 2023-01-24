@@ -40,7 +40,7 @@ def fillUtilityMatrix(utility_matrix, similarity_matrix, topK):
             rating=row[j]
             if(math.isnan(rating)): #Update only empty entries in utility matrix
                 indices, weights = top_K_highest_values(similarity_matrix[0], k=topK + 1) #Since the maximum similarity of an user is with himself, we get k+1 top values and discard the maximum
-                indices = indices[1:]#TO FIX, non usare i valori prediction, manda solo la row della matrix originale con i voti reali degli utenti
+                indices = indices[1:]
                 weights = weights[1:]
                 values=original_matrix[indices, j]
                 prediction=0

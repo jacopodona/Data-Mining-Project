@@ -19,6 +19,17 @@ def read_queries(file_path):
 
     return queries
 
+def replaceMatrixSection(full_df, new_section_df):
+    header = full_df.columns.values.tolist()
+    new_utility=full_df.copy()
+    new_utility=new_utility.to_numpy()
+    new_section_df=new_section_df.to_numpy()
+    num_rows=len(new_section_df)
+
+    new_utility[-num_rows:, :] = new_section_df
+    return pd.DataFrame(new_utility, columns = header)
+
+
 def get_train_val_split(table,train_user_percentage=0.7):
     '''
 
@@ -56,25 +67,44 @@ def mask_val_split(df,query_split_percentage=0.5):
 
     return masked_df
 
-def evaluate(gt_df,proposal_df,huber_threshold=5):
+def evaluate(gt_df,masked_df,proposal_df,huber_threshold=1):
     error=0
     gt_df=gt_df.to_numpy()
-    proposal_df = proposal_df.to_numpy()
+    masked_df=masked_df.to_numpy()
+    if isinstance(proposal_df, pd.DataFrame):
+        proposal_df = proposal_df.to_numpy()
     for i in range(0,len(gt_df)):
         row_error=0
         gt_row=gt_df[i]
+        masked_row = masked_df[i]
         pr_row=proposal_df[i]
+        rated_items = 0
         for j in range(len(gt_row)):
-            if(not math.isnan(gt_row[j])):
+            if(not math.isnan(gt_row[j]) and gt_row[j]!=masked_row[j]):#Compute error only on values obtained through SVD
+                rated_items += 1
                 row_error+=abs((gt_row[j]-pr_row[j])) #Element wise MAE
+                #print('GT:',gt_row[j],'vs Proposed:',pr_row[j])
                 #row_error+=(gt_row[j]-pr_row[j])**2 #Element wise MSE
+
                 '''delta=abs(gt_row[j]-pr_row[j])   #Huber method
                 if(delta<huber_threshold):
                     row_error+=(gt_row[j]-pr_row[j])**2
                 else:
                     row_error+=delta'''
-        error=row_error/len(gt_df)
+        try:
+            error+=(row_error/rated_items) #Compute average item error
+        except ZeroDivisionError:
+            error+=0
+    error=error/len(gt_df) #Compute error per row
     return error
 
 
-
+def convertNaN(utility_matrix):
+    header = utility_matrix.columns.values.tolist()
+    #table=utility_matrix.to_numpy()
+    for i in range(0,len(header)):
+        for j in range(0,len(utility_matrix)):
+            if(math.isnan(utility_matrix.iat[j,i])):
+                utility_matrix.iat[j,i]=0
+    #matrix=pd.DataFrame(utility_matrix, columns = header)
+    return utility_matrix

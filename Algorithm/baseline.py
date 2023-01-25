@@ -38,14 +38,14 @@ def fillUtilityMatrix(utility_matrix, similarity_matrix, topK):
     # Using a Knn style approach for filling the utility matrix behaviour
     header = utility_matrix.columns.values.tolist()
     original_matrix = utility_matrix.to_numpy()
+    similarity_matrix=similarity_matrix.to_numpy()
     filled_matrix = utility_matrix.to_numpy()
     for i in tqdm(range(0, len(original_matrix))):
         row = original_matrix[i]
         for j in range(len(row)):
             rating = row[j]
             if math.isnan(rating):  # Update only empty entries in utility matrix
-                indices, weights = top_K_highest_values(similarity_matrix[0],
-                                                        k=topK + 1)  # Since the maximum similarity of an user is
+                indices, weights = top_K_highest_values(similarity_matrix[i], k=topK + 1)  # Since the maximum similarity of an user is
                 # with himself, we get k+1 top values and discard the maximum
                 indices = indices[1:]
                 weights = weights[1:]
@@ -59,7 +59,7 @@ def fillUtilityMatrix(utility_matrix, similarity_matrix, topK):
                         weights_sum += weights[h]
                 try:
                     prediction = int(prediction / weights_sum)
-                except ZeroDivisionError:
+                except (ZeroDivisionError, ValueError) as e:
                     prediction = random.randint(1, 100)
                 row[j] = prediction
         filled_matrix[i] = row
@@ -69,9 +69,9 @@ def fillUtilityMatrix(utility_matrix, similarity_matrix, topK):
 
 if __name__ == '__main__':
     print('Preparing dataset...')
-    table = '../DatasetGeneration/tables/music.csv'
-    queries = utils.read_queries('../DatasetGeneration/queries/music.csv')
-    matrix='../DatasetGeneration/sparse_utility_matrices/music_utility_matrix.csv'
+    table = '../DatasetGeneration/tables/people.csv'
+    queries = utils.read_queries('../DatasetGeneration/queries/people.csv')
+    matrix='../DatasetGeneration/sparse_utility_matrices/people_utility_matrix.csv'
 
     val_split_percentage=0.8
 

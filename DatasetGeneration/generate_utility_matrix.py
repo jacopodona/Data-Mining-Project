@@ -58,19 +58,19 @@ def get_realistic_utility_matrix(users_list, queries, output_path):
     """
     # First give random rating to list of a small set of queries
     for i in tqdm(range(len(users_list))):
-        user = users_list[i]
-        num_rated_queries = abs(int(np.random.normal(loc=0.03, scale=0.02, size=1) * len(queries)))
-        random_order_queries = queries
+        user=users_list[i]
+        num_rated_queries = abs(int(np.random.normal(loc=0.1, scale=0.02, size=1) * len(queries)))
+        random_order_queries=queries
         shuffle(random_order_queries)
         rated_queries = random_order_queries[:num_rated_queries]
         rates = []
         for j in range(0, len(rated_queries)):
             rates.append(np.random.randint(0, 101))
-        # Queries to rate using previous queries
-        query_rate_results = abs(int(np.random.normal(loc=0.05, scale=0.02, size=1) * len(queries)))
-        for j in range(0, query_rate_results):
-            # Select a non rated query
-            query_to_rate = random.choice(queries)
+        #Queries to rate using previous queries
+        query_rate_results= abs(int(np.random.normal(loc=0.2, scale=0.02, size=1) * len(queries)))
+        for j in range(0,query_rate_results):
+            #Select a non rated query
+            query_to_rate=random.choice(queries)
             while query_to_rate in rated_queries:
                 query_to_rate = random.choice(queries)
             # Compute vote based on similarity with rated queries
@@ -84,13 +84,12 @@ def get_realistic_utility_matrix(users_list, queries, output_path):
             if max_similarity == 0:  # No rated query is similar to selected query
                 vote = np.random.randint(0, 101)
             else:
-                standard_deviation = 1 / max_similarity  # The higher the score, the higher the similarity, the smaller the standard deviation from which the rating is drawn
-                vote = rates[similar_query_index] + int(np.random.normal(loc=0, scale=standard_deviation,
-                                                                         size=1))  # New vote is the one of the most similar query + noise
-            if vote < 0:  # Clip value between 0 and 100 range
-                vote = 0
-            if vote > 100:
-                vote = 100
+                standard_deviation=1/max_similarity #The higher the score, the higher the similarity, the smaller the standard deviation from which the rating is drawn
+                vote=rates[similar_query_index]+int(np.random.normal(loc=0, scale=standard_deviation/2, size=1)) #New vote is the one of the most similar query + noise
+            if vote<0:#Clip value between 0 and 100 range
+                vote=0
+            if vote>100:
+                vote=100
             rated_queries.append(query_to_rate)
             rates.append(vote)
         writeUserRow(user, queries, rated_queries, rates, output_path)

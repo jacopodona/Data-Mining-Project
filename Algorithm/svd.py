@@ -91,30 +91,14 @@ def SVT(M: pd.DataFrame,
         S = S[:r] - tau
         V = V[:r, :]
 
-        # print(U.shape)
-        # print(type(U))
-        # print(S.shape)
-        # print(type(S))
-        # print(V.shape)
-        # print(type(V))
-        #
-        # print(U)
-        # print(S)
-        # print(V)
+
         X = (U * S).dot(V)
-        # print(X.shape)
-        # print(X)
-        # break
-
-
-        #print(X.shape)
         X_omega = ss.csr_matrix((X[Omega], Omega), shape=(n, m))
 
         if ss_norm(X_omega - P_Omega_M) / ss_norm(P_Omega_M) < tolerance: break
 
         diff = P_Omega_M - X_omega
         Y += delta * diff
-        # print(Y.shape)
         rmse.append(np_norm(M[M.nonzero()] - X[M.nonzero()]) / np.sqrt(len(X[M.nonzero()])))
         X = X.clip(0, 1)
 

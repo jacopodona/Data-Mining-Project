@@ -38,13 +38,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\utility_matrices\people_utility_matrix.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
       </map>
     </option>
   </component>

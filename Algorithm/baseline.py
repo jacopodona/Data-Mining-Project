@@ -69,22 +69,28 @@ def fillUtilityMatrix(utility_matrix, similarity_matrix, topK):
 
 if __name__ == '__main__':
     print('Preparing dataset...')
-    table = '../DatasetGeneration/tables/people.csv'
-    queries = utils.read_queries('../DatasetGeneration/queries/people.csv')
-    matrix = '../DatasetGeneration/sparse_utility_matrices/people_utility_matrix.csv'
+    table = '../DatasetGeneration/tables/music.csv'
+    queries = utils.read_queries('../DatasetGeneration/queries/music.csv')
+    matrix='../DatasetGeneration/sparse_utility_matrices/music_utility_matrix.csv'
 
-    items_table = pd.read_csv(table)
-    utility_matrix = pd.read_csv(matrix)
+    val_split_percentage=0.8
 
-    user_similarity = getUserSimilarityMatrix(utility_matrix)
-    utility = utility_matrix.to_numpy()
+    #Get tables loaded into memory
+    items_table=pd.read_csv(table)
+    utility_matrix=pd.read_csv(matrix)
 
-    _, val_full_df = utils.get_train_val_split(utility_matrix, 0.8)
+    #Use section of matrix for training and section for validation
+    _, val_full_df = utils.get_train_val_split(utility_matrix, val_split_percentage)
     val_masked_df = utils.mask_val_split(val_full_df, 0.7)
-
     train_utility_matrix = utils.replaceMatrixSection(utility_matrix, val_masked_df)
 
-    filled_matrix = fillUtilityMatrix(utility_matrix, user_similarity, topK=5)
+    user_similarity=getUserSimilarityMatrix(train_utility_matrix)
+    utility = utility_matrix.to_numpy()
 
-    full = val_full_df.to_numpy()
-    masked = val_masked_df.to_numpy()
+    k=5 #Pick from [1,2,5,10]
+    filled_matrix=fillUtilityMatrix(train_utility_matrix,user_similarity,topK=k)
+    _, val_prediction_split = utils.get_train_val_split(filled_matrix, val_split_percentage)
+    print('='*40)
+    print('K=',k)
+    print('Prediction error per item is:',utils.evaluateMAE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
+    print('Accuracy on prediction=:',utils.evaluateAccuracy(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))

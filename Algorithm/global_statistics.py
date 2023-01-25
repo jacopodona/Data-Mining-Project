@@ -1,11 +1,7 @@
-import pandas
-import os
-import csv
-import random
 import numpy as np
-import utils
 import pandas as pd
-import time
+
+import utils
 
 
 def displayDatasetStatistics(df):
@@ -22,7 +18,7 @@ if __name__ == '__main__':
 
     df=pd.read_csv(table)
     utility_matrix=pd.read_csv(matrix)
-    #displayDatasetStatistics(df)
+    # displayDatasetStatistics(df)
     print('Generating train-val splits')
     train_df,val_full_df=utils.get_train_val_split(utility_matrix,0.8)
     print('Masking splits')

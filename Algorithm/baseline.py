@@ -71,7 +71,7 @@ if __name__ == '__main__':
     print('Preparing dataset...')
     table = '../DatasetGeneration/tables/people.csv'
     queries = utils.read_queries('../DatasetGeneration/queries/people.csv')
-    matrix='../DatasetGeneration/sparse_utility_matrices/people_utility_matrix.csv'
+    matrix='../DatasetGeneration/utility_matrices/people_utility_matrix.csv'
 
     val_split_percentage=0.8
 

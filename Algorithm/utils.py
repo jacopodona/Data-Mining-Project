@@ -1,6 +1,6 @@
 import csv
 import math
-
+from sklearn.metrics import mean_absolute_error,mean_squared_error
 import numpy as np
 import pandas as pd
 
@@ -68,7 +68,7 @@ def mask_val_split(df, query_split_percentage=0.5):
 
     return masked_df
 
-def evaluateMAE(gt_df,masked_df,proposal_df,huber_threshold=1):
+def evaluateMAE(gt_df,masked_df,proposal_df):
     error=0
     gt_df=gt_df.to_numpy()
     masked_df=masked_df.to_numpy()
@@ -80,16 +80,15 @@ def evaluateMAE(gt_df,masked_df,proposal_df,huber_threshold=1):
         masked_row = masked_df[i]
         pr_row = proposal_df[i]
         rated_items = 0
+        gt=[]
+        proposals=[]
         for j in range(len(gt_row)):
-            if not math.isnan(gt_row[j]) and gt_row[j] != masked_row[j]:  # Compute error only on values obtained
-                # through SVD
+            if not math.isnan(gt_row[j]) and gt_row[j] != masked_row[j]:  # Compute error only on ground truth values that have been masked
+                gt.append(gt_row[j])
+                proposals.append(pr_row[j])
                 rated_items += 1
-                row_error+=abs((gt_row[j]-pr_row[j])) #Element wise MAE
-                #row_error+=(gt_row[j]-pr_row[j])**2 #Element wise MSE
-        try:
-            error += (row_error / rated_items)  # Compute average item error
-        except ZeroDivisionError:
-            error += 0
+        mae = mean_absolute_error(gt, proposals)
+        error += mae  # Compute average item error
     error = error / len(gt_df)  # Compute error per row
     return error
 
@@ -108,7 +107,10 @@ def evaluateAccuracy(gt_df,masked_df,proposal_df,huber_threshold=1):
         pr_row=proposal_df[i]
         user_average_vote=np.nanmean(gt_row)
         for j in range(len(gt_row)):
-            if(not math.isnan(gt_row[j]) and gt_row[j]!=masked_row[j]):#Compute error only on values obtained through SVD
+            if(not math.isnan(gt_row[j]) and gt_row[j]!=masked_row[j]):# Compute error only on ground truth values that have been masked
+                #gt = gt_row[j]
+                #prediction = pr_row[j]
+                user_average_vote=50
                 if((gt_row[j]>user_average_vote and pr_row[j]>user_average_vote) or (gt_row[j]<user_average_vote and pr_row[j]<user_average_vote)):
                     good_predicted_item+=1
                 else:
@@ -119,6 +121,31 @@ def evaluateAccuracy(gt_df,masked_df,proposal_df,huber_threshold=1):
         except ZeroDivisionError:
             error+=0
     error=error/len(gt_df) #Compute error per row
+    return error
+
+def evaluateRMSE(gt_df,masked_df,proposal_df):
+    error = 0
+    gt_df = gt_df.to_numpy()
+    masked_df = masked_df.to_numpy()
+    if isinstance(proposal_df, pd.DataFrame):
+        proposal_df = proposal_df.to_numpy()
+    for i in range(0, len(gt_df)):
+        row_error = 0
+        gt_row = gt_df[i]
+        masked_row = masked_df[i]
+        pr_row = proposal_df[i]
+        rated_items = 0
+        gt=[]
+        proposals=[]
+        for j in range(len(gt_row)):
+            if not math.isnan(gt_row[j]) and gt_row[j] != masked_row[j]:  # Compute error only on ground truth values that have been masked
+                # through SVD
+                gt.append(gt_row[j])
+                proposals.append(pr_row[j])
+                rated_items += 1
+        rmse=np.sqrt(mean_squared_error(gt,proposals))
+        error += rmse  # Compute average item error
+    error = error / len(gt_df)  # Compute error per row
     return error
 
 

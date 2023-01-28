@@ -146,11 +146,3 @@ if __name__ == '__main__':
     print('Prediction error per item is:',utils.evaluate(gt_df=val_full_df,masked_df=val_masked_df,proposal_df=val_prediction_split))
 
 
-
-    '''x_coordinate = range(len(rmse))
-    plt.ylim(0, 0.5)
-    plt.xlabel('Number of iterations')
-    plt.ylabel('RMSE')
-    plt.plot(x_coordinate, rmse, '-')
-    plt.show()'''
-

@@ -7,19 +7,16 @@ import scipy
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
+
 import utils
 
 
 def getUserSimilarityMatrix(utility_matrix):
     ids = utility_matrix.index.tolist()
     table = utility_matrix.to_numpy()
-    # Get a "normalized" utility matrix, where every item rating equals to the difference between the actual rating
-    # in the 1-100 range minus the user average grade
-    row_avg = np.nanmean(table, axis=1)  # Ignores NaN when computing mean
-    normalized_matrix = table - row_avg[:, np.newaxis]
     # Replaces NaN values with 0s
-    normalized_matrix = np.nan_to_num(normalized_matrix)
-    matrix = scipy.sparse.csr_matrix(normalized_matrix)  # pandas DF into scipy sparse matrix
+    matrix = np.nan_to_num(table)
+    matrix = scipy.sparse.csr_matrix(matrix)  # pandas DF into scipy sparse matrix
 
     # Compute user similarity matrix using cosine similarity
     similarities = cosine_similarity(matrix)
@@ -87,10 +84,11 @@ if __name__ == '__main__':
     user_similarity=getUserSimilarityMatrix(train_utility_matrix)
     utility = utility_matrix.to_numpy()
 
-    k=5 #Pick from [1,2,5,10]
+    k=20 #Pick from [1,2,5,10]
     filled_matrix=fillUtilityMatrix(train_utility_matrix,user_similarity,topK=k)
     _, val_prediction_split = utils.get_train_val_split(filled_matrix, val_split_percentage)
     print('='*40)
     print('K=',k)
-    print('Prediction error per item is:',utils.evaluateMAE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
+    print('MAE per row:',utils.evaluateMAE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
+    print('RMSE per row=:',utils.evaluateRMSE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
     print('Accuracy on prediction=:',utils.evaluateAccuracy(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))

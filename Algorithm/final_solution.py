@@ -11,15 +11,31 @@ from tqdm import tqdm
 
 import utils
 from get_similarity_scores import get_query_similarity_scores
-from baseline import getUserSimilarityMatrix
 from input_utils import read_queries, build_queries_on_table, get_queries_set, read_user_list, read_utility_matrix, \
     read_table,get_queries_list
+
+def getUserSimilarityMatrix(utility_matrix):
+    ids = utility_matrix.index.tolist()
+    table = utility_matrix.to_numpy()
+    # Get a "normalized" utility matrix, where every item rating equals to the difference between the actual rating
+    # in the 1-100 range minus the user average grade
+    row_avg = np.nanmean(table, axis=1)  # Ignores NaN when computing mean
+    normalized_matrix = table - row_avg[:, np.newaxis]
+    # Replaces NaN values with 0s
+    normalized_matrix = np.nan_to_num(normalized_matrix)
+    matrix = scipy.sparse.csr_matrix(normalized_matrix)  # pandas DF into scipy sparse matrix
+
+    # Compute user similarity matrix using cosine similarity
+    similarities = cosine_similarity(matrix)
+    similarities = pd.DataFrame(similarities, index=ids, columns=ids)
+    return similarities
 
 def top_K_highest_values(row, k):
     # get the indices and values of the top five highest values in the array
     top_five_indices = row.argsort()[-k:][::-1]
     top_five_values = row[top_five_indices]
-    return top_five_indices, top_five_values
+    normalized_top_five_values = top_five_values / np.linalg.norm(top_five_values)
+    return top_five_indices, normalized_top_five_values
 
 def fillUtilityMatrix(utility_matrix, user_similarity_matrix,query_similarity_matrix, topK):
     # Using a Knn style approach for filling the utility matrix behaviour
@@ -38,6 +54,7 @@ def fillUtilityMatrix(utility_matrix, user_similarity_matrix,query_similarity_ma
                 k_user_indices, k_user_weights = top_K_highest_values(user_similarity_matrix[i], k=topK + 1)
                 k_user_indices = k_user_indices[1:]
                 k_user_weights = k_user_weights[1:]
+                k_user_weights = k_user_weights*3
 
                 #Get query neighbors and weights
                 k_query_indices, k_query_weights = top_K_highest_values(query_similarity_matrix[j], k=topK + 1)
@@ -82,18 +99,18 @@ def getQuerySimilarityMatrix(queries_file,similarity_scores):
 if __name__ == '__main__':
     start_time=time.time()
     print('Preparing dataset...')
-    table = '../DatasetGeneration/tables/people.csv'
-    matrix='../DatasetGeneration/utility_matrices/people_utility_matrix.csv'
-    queries_file='people.csv'
+    table = '../DatasetGeneration/tables/movies.csv'
+    matrix='../DatasetGeneration/utility_matrices/movies_utility_matrix.csv'
+    queries_file='movies.csv'
 
-    table = read_table('people.csv')
+    table = read_table('movies.csv')
 
     queries = read_queries(queries_file)
     queries = build_queries_on_table(table, queries)
 
-    user_list = read_user_list('people_user_list')
+    user_list = read_user_list('movies_user_list')
 
-    utility_matrix = read_utility_matrix('people_utility_matrix.csv')
+    utility_matrix = read_utility_matrix('movies_utility_matrix.csv')
 
     val_split_percentage=0.8
 
@@ -109,12 +126,13 @@ if __name__ == '__main__':
     query_similarity=getQuerySimilarityMatrix(queries_file,query_scores)
     print("Done")
 
-    k=5 #Pick from [1,2,5,10]
+    k=20 #Pick from [1,2,5,10]
     filled_matrix=fillUtilityMatrix(train_utility_matrix,user_similarity,query_similarity,topK=k)
     _, val_prediction_split = utils.get_train_val_split(filled_matrix, val_split_percentage)
     print('='*40)
     print('K=',k)
-    print('Prediction error per item is:',utils.evaluateMAE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
-    print('Accuracy on prediction=:',utils.evaluateAccuracy(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
+    print('MAE per row:',utils.evaluateMAE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
+    print('RMSE per row=:',utils.evaluateRMSE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
+    print('Accuracy on predictions=:',utils.evaluateAccuracy(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
 
     print('Execution time:',round(time.time()-start_time,2))

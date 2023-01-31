@@ -12,7 +12,7 @@ import time
 warnings.filterwarnings("error")'''
 
 
-def matrix_factorization(R, P, Q, K, steps=1, alpha=0.0002, beta=0.02):
+def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
     start_time = time.time()
     Q = Q.T
     for step in range(0,steps):
@@ -46,7 +46,7 @@ def fillMatrix(utility_matrix):
 
     N = len(R)
     M = len(R[0])
-    K = 2
+    K = 2 #Number of features/concepts
 
     P = np.random.rand(N, K)
     Q = np.random.rand(M, K)

@@ -85,7 +85,7 @@ def get_realistic_utility_matrix(users_list, queries, output_path):
                 vote = np.random.randint(0, 101)
             else:
                 standard_deviation = 1 / max_similarity  # The higher the score, the higher the similarity, the smaller the standard deviation from which the rating is drawn
-                vote = rates[similar_query_index] + int(np.random.normal(loc=0, scale=standard_deviation,
+                vote = rates[similar_query_index] + int(np.random.normal(loc=0, scale=standard_deviation*2,
                                                                          size=1))  # New vote is the one of the most similar query + noise
             if vote < 0:  # Clip value between 0 and 100 range
                 vote = 0

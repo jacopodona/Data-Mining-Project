@@ -10,7 +10,7 @@ import pandas as pd
 ASSET_DIR = 'assets'
 TABLE_OUTPUT_DIR = 'tables'
 QUERY_OUTPUT_DIR = 'queries'
-MUSIC_ITEMS_LEN = 25000
+MUSIC_ITEMS_LEN = 10000
 MOVIE_ITEMS_LEN = 5000
 PEOPLE_ITEMS_LEN = 50000
 
@@ -197,7 +197,7 @@ def generateQueries(table, numquery):
         min = 1
         max = 5
     elif tablename == 'music':
-        header = ['id', 'name', 'artist', 'genre', 'duration']
+        header = ['id', 'name', 'artist', 'genre', 'year']
         min = 1
         max = 4
 

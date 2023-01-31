@@ -7,16 +7,16 @@ import numpy as np
 import pandas as pd
 from numpy import ndarray
 from pandas import DataFrame
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error,mean_squared_error
 
 
 def print_results(k: int, full_df: DataFrame, val_mask_df: DataFrame, pred_df: DataFrame, start_time: float):
     print('=' * 40)
     print('K=', k)
     print('MAE per row:',
-          evaluateMAE(gt_df=full_df, masked_df=val_mask_df, proposal_df=pred_df))
+          evaluateMAE_old(gt_df=full_df, masked_df=val_mask_df, proposal_df=pred_df))
     print('RMSE per row=:',
-          evaluateRMSE(gt_df=full_df, masked_df=val_mask_df, proposal_df=pred_df))
+          evaluateRMSE_old(gt_df=full_df, masked_df=val_mask_df, proposal_df=pred_df))
     print('Accuracy on predictions=:',
           evaluateAccuracy(gt_df=full_df, masked_df=val_mask_df, proposal_df=pred_df))
 
@@ -46,7 +46,7 @@ def replaceMatrixSection(full_df: DataFrame, new_section_df: DataFrame) -> DataF
     return pd.DataFrame(new_utility, columns=header)
 
 
-def get_train_val_split(table: (DataFrame | ndarray), train_user_percentage: float = 0.7) -> (DataFrame, DataFrame):
+def get_train_val_split(table: (DataFrame), train_user_percentage: float = 0.7) -> (DataFrame, DataFrame):
     """
 
     :param table: pandas dataframe containing utility matrix
@@ -116,6 +116,34 @@ def evaluateMAE(gt_df: DataFrame, masked_df: DataFrame, proposal_df: DataFrame) 
     error = error / len(gt_df)  # Compute error per row
     return error
 
+def evaluateMAE_old(gt_df,masked_df,proposal_df):
+    error=0
+    gt_df=gt_df.to_numpy()
+    masked_df=masked_df.to_numpy()
+    if isinstance(proposal_df, pd.DataFrame):
+        proposal_df = proposal_df.to_numpy()
+    for i in range(0, len(gt_df)):
+        row_error = 0
+        gt_row = gt_df[i]
+        masked_row = masked_df[i]
+        pr_row = proposal_df[i]
+        rated_items = 0
+        gt=[]
+        proposals=[]
+        for j in range(len(gt_row)):
+            if not math.isnan(gt_row[j]) and gt_row[j] != masked_row[j]:  # Compute error only on ground truth values that have been masked
+                rated_items+=1
+                gt.append(gt_row[j])
+                proposals.append(pr_row[j])
+                row_error += abs((gt_row[j] - pr_row[j]))  # Element wise MAE
+                # row_error+=(gt_row[j]-pr_row[j])**2 #Element wise MSE
+        try:
+            error += (row_error / rated_items)  # Compute average item error
+        except ZeroDivisionError:
+            error += 0
+    error = error / len(gt_df)  # Compute error per row
+    return error
+
 
 def evaluateAccuracy(gt_df,masked_df,proposal_df,huber_threshold=1):
     error=0
@@ -149,17 +177,53 @@ def evaluateAccuracy(gt_df,masked_df,proposal_df,huber_threshold=1):
     return error
 
 
-def evaluateRMSE(gt_df: DataFrame, masked_df: DataFrame, proposal_df: DataFrame) -> float:
+def evaluateRMSE(gt_df,masked_df,proposal_df):
     error = 0
     gt_df = gt_df.to_numpy()
     masked_df = masked_df.to_numpy()
     if isinstance(proposal_df, pd.DataFrame):
         proposal_df = proposal_df.to_numpy()
     for i in range(0, len(gt_df)):
-        # row_error = 0
-        gt, proposals = get_prediction_and_truth(gt_df, masked_df, proposal_df, i)
-        rmse = np.sqrt()
+        row_error = 0
+        gt_row = gt_df[i]
+        masked_row = masked_df[i]
+        pr_row = proposal_df[i]
+        rated_items = 0
+        gt=[]
+        proposals=[]
+        for j in range(len(gt_row)):
+            if not math.isnan(gt_row[j]) and gt_row[j] != masked_row[j]:  # Compute error only on ground truth values that have been masked
+                gt.append(gt_row[j])
+                proposals.append(pr_row[j])
+                rated_items += 1
+        rmse=np.sqrt(mean_squared_error(gt,proposals))
         error += rmse  # Compute average item error
+    error = error / len(gt_df)  # Compute error per row
+    return error
+
+def evaluateRMSE_old(gt_df,masked_df,proposal_df):
+    error=0
+    gt_df=gt_df.to_numpy()
+    masked_df=masked_df.to_numpy()
+    if isinstance(proposal_df, pd.DataFrame):
+        proposal_df = proposal_df.to_numpy()
+    for i in range(0, len(gt_df)):
+        row_error = 0
+        gt_row = gt_df[i]
+        masked_row = masked_df[i]
+        pr_row = proposal_df[i]
+        rated_items = 0
+        gt=[]
+        proposals=[]
+        for j in range(len(gt_row)):
+            if not math.isnan(gt_row[j]) and gt_row[j] != masked_row[j]:  # Compute error only on ground truth values that have been masked
+                rated_items+=1
+                gt.append(gt_row[j])
+                row_error+=(gt_row[j]-pr_row[j])**2 #Element wise MSE
+        try:
+            error += math.sqrt((row_error / rated_items))  # Compute root mean squared item error
+        except ZeroDivisionError:
+            error += 0
     error = error / len(gt_df)  # Compute error per row
     return error
 

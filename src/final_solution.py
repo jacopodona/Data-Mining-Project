@@ -57,8 +57,8 @@ def fill_utility_matrix(utility_matrix: DataFrame,
         for j in range(len(row)):
             rating = row[j]
             if math.isnan(rating):  # Update only empty entries in utility matrix
-                # Since the maximum similarity of a user is with himself, we get k+1 top values and discard the maximum
-                # Get user neighbors and weights
+                # Since the maximum similarity of an user is with himself, we get k+1 top values and discard the maximum
+                #Get user neighbors and weights
                 k_user_indices, k_user_weights = top_K_highest_values(user_similarity_matrix[i], k=top_k + 1)
                 k_user_indices = k_user_indices[1:]
                 k_user_weights = k_user_weights[1:]

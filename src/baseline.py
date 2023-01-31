@@ -93,4 +93,4 @@ if __name__ == '__main__':
     k = 20  # Pick from [1,2,5,10]
     filled_matrix = fillUtilityMatrix(train_utility_matrix, user_similarity, top_k=k)
     _, val_prediction_split = utils.get_train_val_split(filled_matrix, val_split_percentage)
-    utils.print_results(k, val_full_df, val_masked_df, val_prediction_split, start_time, real_data)
+    utils.print_results(k, val_full_df, val_masked_df, val_prediction_split, start_time)

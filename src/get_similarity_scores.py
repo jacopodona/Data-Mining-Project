@@ -94,7 +94,7 @@ def get_query_similarity_scores(queries: List[Dict]) -> Dict:
 
     for i, query1 in enumerate(tqdm(queries)):
         if i <= len(queries) - 2:
-            for query2 in queries[i + 1:]:
+            for query2 in queries:
                 score = get_query_similarity_score(query1["condition"], query2["condition"])
 
                 if query1["id"] in score_matrix.keys():

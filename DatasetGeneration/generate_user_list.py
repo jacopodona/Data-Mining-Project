@@ -1,7 +1,6 @@
-import uuid
-import os
 import argparse
-
+import os
+import uuid
 
 ASSET_DIR = "assets"
 USER_DIR = "users"
@@ -10,7 +9,7 @@ USER_DIR = "users"
 def get_new_user(num: int) -> str:
     for _ in range(num):
         tmp_id = uuid.uuid4().time_low
-        yield "user"+str(tmp_id)
+        yield "user" + str(tmp_id)
 
 
 def generate_user_list(file_name: str, users_num: int):

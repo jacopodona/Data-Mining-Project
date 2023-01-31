@@ -1,9 +1,11 @@
+import argparse
 import csv
-import random
 import json
 import os
-import argparse
+import random
+
 import pandas as pd
+
 # import generate_user_list
 # import generate_utility_matrix
 
@@ -15,7 +17,7 @@ MOVIE_ITEMS_LEN = 5000
 PEOPLE_ITEMS_LEN = 50000
 
 
-def generateMusicTable():
+def generate_music_table():
     header = ['id', 'name', 'artist', 'genre', 'year']  # Add nationality to songs?
 
     # Load nouns for song name
@@ -43,8 +45,8 @@ def generateMusicTable():
 
     id = 0
     songs = []
-    for i in range(0, MUSIC_ITEMS_LEN):
-        item_id = id
+    for curr_id in range(0, MUSIC_ITEMS_LEN):
+        item_id = curr_id
         item_name = random.choice(nouns)
         item_genre = random.choice(genres)
         item_duration = random.choice(year)
@@ -55,7 +57,7 @@ def generateMusicTable():
         songs.append(item)
 
     # open the file in the write mode
-    with open(os.path.join(TABLE_OUTPUT_DIR, 'music.csv'), 'w',newline='') as f:
+    with open(os.path.join(TABLE_OUTPUT_DIR, 'music.csv'), 'w', newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -65,7 +67,7 @@ def generateMusicTable():
         writer.writerows(songs)
 
 
-def generateMoviesTable():
+def generate_movies_table():
     header = ['id', 'name', 'genre', 'duration', 'nationality']
 
     # Load genres
@@ -94,8 +96,8 @@ def generateMoviesTable():
 
     id = 0
     movies = []
-    for i in range(0, MOVIE_ITEMS_LEN):
-        item_id = id
+    for curr_id in range(0, MOVIE_ITEMS_LEN):
+        item_id = curr_id
         item_name = random.choice(nouns) + ' ' + random.choice(nouns)
         item_genre = random.choice(genres)
         item_duration = random.randint(90, 240)
@@ -106,7 +108,7 @@ def generateMoviesTable():
         movies.append(item)
 
     # open the file in the write mode
-    with open(os.path.join(TABLE_OUTPUT_DIR, 'movies.csv'), 'w',newline='') as f:
+    with open(os.path.join(TABLE_OUTPUT_DIR, 'movies.csv'), 'w', newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -116,7 +118,7 @@ def generateMoviesTable():
         writer.writerows(movies)
 
 
-def generatePeopleTable():
+def generate_people_table():
     header = ['id', 'first_name', 'last_name', 'age', 'job', 'nationality']
 
     # Load first names
@@ -155,8 +157,8 @@ def generatePeopleTable():
 
     id = 0
     people = []
-    for i in range(0, PEOPLE_ITEMS_LEN):
-        item_id = id
+    for curr_id in range(0, PEOPLE_ITEMS_LEN):
+        item_id = curr_id
         item_first_name = random.choice(first_names)
         item_last_name = random.choice(last_names)
         item_age = random.randint(18, 80)
@@ -168,7 +170,7 @@ def generatePeopleTable():
         people.append(item)
 
     # open the file in the write mode
-    with open(os.path.join(TABLE_OUTPUT_DIR, 'people.csv'), 'w',newline='') as f:
+    with open(os.path.join(TABLE_OUTPUT_DIR, 'people.csv'), 'w', newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -178,28 +180,28 @@ def generatePeopleTable():
         writer.writerows(people)
 
 
-def generateQueries(table, numquery):
-    '''
+def generate_queries(table, numquery):
+    """
     Takes as input a csv table path and generates random queries iterating through the table items
 
     :param table: 'movies.csv' or 'people.csv' or 'music.csv'
     :param numquery: Number of queries to generate
     :return:
-    '''
+    """
     tablename = table.split('.')[0]  # get table name from table.csv
 
     if tablename == 'movies':
         header = ['id', 'name', 'genre', 'duration', 'nationality']
-        min = 1
-        max = 4
+        col_min = 1
+        col_max = 4
     elif tablename == 'people':
         header = ['id', 'first_name', 'last_name', 'age', 'job', 'nationality']
-        min = 1
-        max = 5
+        col_min = 1
+        col_max = 5
     elif tablename == 'music':
         header = ['id', 'name', 'artist', 'genre', 'year']
-        min = 1
-        max = 4
+        col_min = 1
+        col_max = 4
 
     with open(os.path.join(TABLE_OUTPUT_DIR, table)) as f:
         df = pd.read_csv(f)
@@ -207,31 +209,31 @@ def generateQueries(table, numquery):
     queries = set()
     while len(queries) != numquery:
         query = ''
-        randomRow = df.iloc[random.randint(0, len(df))]
+        random_row = df.iloc[random.randint(0, len(df))]
         i = random.randint(1, 4)  # Generate random length query
         q_id = 'Q' + str(len(queries))
         if i == 1:  # Generate random query of length 1
-            h = random.randint(min, max)
-            query = q_id + ', ' + header[h] + '=' + str(randomRow[h])
+            h = random.randint(col_min, col_max)
+            query = q_id + ', ' + header[h] + '=' + str(random_row[h])
             pass
         elif i == 2:  # Generate random query of length 2
             h1 = 1
             h2 = 1
             while h1 == h2:
-                h1 = random.randint(min, max)
-                h2 = random.randint(min, max)
-            query = q_id + ', ' + header[h1] + '=' + str(randomRow[h1]) + ', ' + header[h2] + '=' + str(randomRow[h2])
+                h1 = random.randint(col_min, col_max)
+                h2 = random.randint(col_min, col_max)
+            query = q_id + ', ' + header[h1] + '=' + str(random_row[h1]) + ', ' + header[h2] + '=' + str(random_row[h2])
             pass
         elif i == 3:  # Generate random query of length 3
             h1 = 1
             h2 = 1
             h3 = 1
             while h1 == h2 or h2 == h3 or h1 == h3:
-                h1 = random.randint(min, max)
-                h2 = random.randint(min, max)
-                h3 = random.randint(min, max)
-            query = q_id + ', ' + header[h1] + '=' + str(randomRow[h1]) + ', ' + header[h2] + '=' + str(
-                randomRow[h2]) + ', ' + header[h3] + '=' + str(randomRow[h3])
+                h1 = random.randint(col_min, col_max)
+                h2 = random.randint(col_min, col_max)
+                h3 = random.randint(col_min, col_max)
+            query = q_id + ', ' + header[h1] + '=' + str(random_row[h1]) + ', ' + header[h2] + '=' + str(
+                random_row[h2]) + ', ' + header[h3] + '=' + str(random_row[h3])
             pass
         elif i == 4:  # Generate random query of length 4
             h1 = 1
@@ -239,18 +241,18 @@ def generateQueries(table, numquery):
             h3 = 1
             h4 = 1
             while h1 == h2 or h2 == h3 or h1 == h3 or h1 == h4 or h2 == h4 or h3 == h4:
-                h1 = random.randint(min, max)
-                h2 = random.randint(min, max)
-                h3 = random.randint(min, max)
-                h4 = random.randint(min, max)
-            query = q_id + ', ' + header[h1] + '=' + str(randomRow[h1]) + ', ' + header[h2] + '=' + str(
-                randomRow[h2]) + ', ' + header[h3] + '=' + str(randomRow[h3]) + ', ' + header[h4] + '=' + str(
-                randomRow[h4])
+                h1 = random.randint(col_min, col_max)
+                h2 = random.randint(col_min, col_max)
+                h3 = random.randint(col_min, col_max)
+                h4 = random.randint(col_min, col_max)
+            query = q_id + ', ' + header[h1] + '=' + str(random_row[h1]) + ', ' + header[h2] + '=' + str(
+                random_row[h2]) + ', ' + header[h3] + '=' + str(random_row[h3]) + ', ' + header[h4] + '=' + str(
+                random_row[h4])
             pass
         queries.add(str(query))
 
     # open the file in the write mode
-    with open(os.path.join(QUERY_OUTPUT_DIR, tablename + '.csv'), 'w',newline='') as f:
+    with open(os.path.join(QUERY_OUTPUT_DIR, tablename + '.csv'), 'w', newline='') as f:
         # create the csv writer
         writer = csv.writer(f)
 
@@ -258,19 +260,19 @@ def generateQueries(table, numquery):
             writer.writerow([row])
 
 
-def generateTable(domain):
-    '''
+def generate_table(domain):
+    """
     :param domain: Parameter for the table domain, available domains are 'music', 'movies', 'people'.
                     Each domain has different properties
     :return: Generates <domain>.csv file
-    '''
+    """
 
     if domain == 'music':
-        generateMusicTable()
+        generate_music_table()
     elif domain == 'movies':
-        generateMoviesTable()
+        generate_movies_table()
     elif domain == 'people':
-        generatePeopleTable()
+        generate_people_table()
 
 
 def main():
@@ -281,9 +283,9 @@ def main():
 
     domain = args.domain
 
-    generateTable(domain)
-    tableFile = domain + '.csv'
-    generateQueries(tableFile, 500)
+    generate_table(domain)
+    table_file = domain + '.csv'
+    generate_queries(table_file, 500)
 
 
 if __name__ == '__main__':

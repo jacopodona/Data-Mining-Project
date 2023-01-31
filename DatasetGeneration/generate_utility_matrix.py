@@ -58,19 +58,19 @@ def get_realistic_utility_matrix(users_list, queries, output_path):
     """
     # First give random rating to list of a small set of queries
     for i in tqdm(range(len(users_list))):
-        user=users_list[i]
-        num_rated_queries = abs(int(np.random.normal(loc=0.1, scale=0.02, size=1) * len(queries)))
-        random_order_queries=queries
+        user = users_list[i]
+        num_rated_queries = abs(int(np.random.normal(loc=0.03, scale=0.02, size=1) * len(queries)))
+        random_order_queries = queries
         shuffle(random_order_queries)
         rated_queries = random_order_queries[:num_rated_queries]
         rates = []
         for j in range(0, len(rated_queries)):
             rates.append(np.random.randint(0, 101))
-        #Queries to rate using previous queries
-        query_rate_results= abs(int(np.random.normal(loc=0.2, scale=0.02, size=1) * len(queries)))
-        for j in range(0,query_rate_results):
-            #Select a non rated query
-            query_to_rate=random.choice(queries)
+        # Queries to rate using previous queries
+        query_rate_results = abs(int(np.random.normal(loc=0.05, scale=0.02, size=1) * len(queries)))
+        for j in range(0, query_rate_results):
+            # Select a non rated query
+            query_to_rate = random.choice(queries)
             while query_to_rate in rated_queries:
                 query_to_rate = random.choice(queries)
             # Compute vote based on similarity with rated queries
@@ -84,12 +84,13 @@ def get_realistic_utility_matrix(users_list, queries, output_path):
             if max_similarity == 0:  # No rated query is similar to selected query
                 vote = np.random.randint(0, 101)
             else:
-                standard_deviation=1/max_similarity #The higher the score, the higher the similarity, the smaller the standard deviation from which the rating is drawn
-                vote=rates[similar_query_index]+int(np.random.normal(loc=0, scale=standard_deviation/2, size=1)) #New vote is the one of the most similar query + noise
-            if vote<0:#Clip value between 0 and 100 range
-                vote=0
-            if vote>100:
-                vote=100
+                standard_deviation = 1 / max_similarity  # The higher the score, the higher the similarity, the smaller the standard deviation from which the rating is drawn
+                vote = rates[similar_query_index] + int(np.random.normal(loc=0, scale=standard_deviation,
+                                                                         size=1))  # New vote is the one of the most similar query + noise
+            if vote < 0:  # Clip value between 0 and 100 range
+                vote = 0
+            if vote > 100:
+                vote = 100
             rated_queries.append(query_to_rate)
             rates.append(vote)
         writeUserRow(user, queries, rated_queries, rates, output_path)
@@ -99,14 +100,14 @@ def writeUserRow(user, total_queries, user_rated_queries, rates, output_path):
     row = [user]
     for i in range(0, len(total_queries)):
         q = total_queries[i]
-        hasBeenRated = False
+        has_been_rated = False
         for j in range(0, len(user_rated_queries)):
             r = user_rated_queries[j]
             if q[0] == r[0]:  # If they have same id, the user has rated the query, append the vote
                 row.append(str(rates[j]))
-                hasBeenRated = True
-        if (
-                hasBeenRated == False):  # If they id has not been found the query has not been rated by the user, append empty rating
+                has_been_rated = True
+        # If they id has not been found the query has not been rated by the user, append empty rating
+        if not has_been_rated:
             row.append("")
     with open(os.path.join(UTILITY_MATRICES_DIR, output_path), 'a') as fp:
         fp.write(",".join(row))
@@ -138,12 +139,9 @@ def read_queries(file_path: str, output_file_path: str) -> int:
 
     queries = [query[0].split(",") for query in queries]
     queries_ids = [query[0] for query in queries]
-    query_ids_len = len(queries_ids)
     with open(os.path.join(UTILITY_MATRICES_DIR, output_file_path), 'w') as fp:
         fp.write(",".join(queries_ids))
         fp.write("\n")
-
-    # del queries, queries_ids
 
     return queries
 

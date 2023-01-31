@@ -1,17 +1,23 @@
 import math
 import random
+import time
 
 import numpy as np
 import pandas as pd
 import scipy
+from pandas import DataFrame
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
-
 
 import utils
 
 
-def getUserSimilarityMatrix(utility_matrix):
+def getUserSimilarityMatrix(utility_matrix: DataFrame) -> DataFrame:
+    """
+    Build the user similarity matrix using the cosine similarity
+    :param utility_matrix: raw utility matrix
+    :return: user similarity matrix
+    """
     ids = utility_matrix.index.tolist()
     table = utility_matrix.to_numpy()
     # Replaces NaN values with 0s
@@ -66,29 +72,24 @@ def fillUtilityMatrix(utility_matrix, similarity_matrix, topK):
 
 if __name__ == '__main__':
     print('Preparing dataset...')
-    table = '../DatasetGeneration/tables/people.csv'
-    queries = utils.read_queries('../DatasetGeneration/queries/people.csv')
-    matrix='../DatasetGeneration/utility_matrices/people_utility_matrix.csv'
+    # table = '../DatasetGeneration/tables/music.csv'
+    # queries = utils.read_queries('../DatasetGeneration/queries/music.csv')
+    start_time = time.time()
+    matrix = f'../DatasetGeneration/utility_matrices/people_utility_matrix.csv'
+    val_split_percentage = 0.8
 
-    val_split_percentage=0.8
+    # Get tables loaded into memory
+    # items_table = pd.read_csv(table)
+    utility_matrix = pd.read_csv(matrix)
 
-    #Get tables loaded into memory
-    items_table=pd.read_csv(table)
-    utility_matrix=pd.read_csv(matrix)
-
-    #Use section of matrix for training and section for validation
+    # Use section of matrix for training and section for validation
     _, val_full_df = utils.get_train_val_split(utility_matrix, val_split_percentage)
     val_masked_df = utils.mask_val_split(val_full_df, 0.7)
     train_utility_matrix = utils.replaceMatrixSection(utility_matrix, val_masked_df)
 
-    user_similarity=getUserSimilarityMatrix(train_utility_matrix)
+    user_similarity = getUserSimilarityMatrix(train_utility_matrix)
     utility = utility_matrix.to_numpy()
-
-    k=20 #Pick from [1,2,5,10]
-    filled_matrix=fillUtilityMatrix(train_utility_matrix,user_similarity,topK=k)
+    k = 20  # Pick from [1,2,5,10]
+    filled_matrix = fillUtilityMatrix(train_utility_matrix, user_similarity, top_k=k)
     _, val_prediction_split = utils.get_train_val_split(filled_matrix, val_split_percentage)
-    print('='*40)
-    print('K=',k)
-    print('MAE per row:',utils.evaluateMAE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
-    print('RMSE per row=:',utils.evaluateRMSE(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
-    print('Accuracy on prediction=:',utils.evaluateAccuracy(gt_df=val_full_df, masked_df=val_masked_df, proposal_df=val_prediction_split))
+    utils.print_results(k, val_full_df, val_masked_df, val_prediction_split, start_time, real_data)
